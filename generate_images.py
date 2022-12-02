@@ -1,3 +1,5 @@
+import arabic_reshaper
+import pandas as pd
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
@@ -19,40 +21,37 @@ fonts = [
 
 
 # Read words from file
-words = []
-with open("wiktionary/words.csv", "r") as f:
-  for i, line in enumerate(f):
-    word = line.split()[1]
-    words.append(word)
-
-
-# Generate index
-with open("images/index.csv", "w") as f:
-    for i, word in enumerate(words):
-        f.write(f"{i}, {word}\n")
-
+words_df = pd.read_csv("wiktionary/words.csv", names=["romanization", "manchu"])
 
 # Generate images
-width = 512
-height = 128
+width = 224
+height = 224
+padding = 10
+base_img = Image.new("RGB", (width, height), color="white")
+base_draw = ImageDraw.Draw(base_img)
 
-for font_num, font_name in enumerate(fonts):
+for i in range(len(words_df)):
+    if (i + 1) % 100 == 0:
+        print(f"Generated {i+1} words...")
 
-    font_path = "font/" + font_name
-    font = ImageFont.truetype(font_path, size=100)
+    romanization, word = words_df.iloc[i]
 
-    for i, word in enumerate(words):
+    for font_num, font_name in enumerate(fonts):
+        font = ImageFont.truetype(f"font/{font_name}", size=100)
 
-        img = Image.new("RGB", (width, height), color="white")
+        # Thanks to Jack for suggesting to use arabic
+        reshaped = arabic_reshaper.reshape(word)
 
-        imgDraw = ImageDraw.Draw(img)
+        left, top, right, bottom = base_draw.textbbox((0, 0), reshaped, font=font, anchor="lt", language="ar-SA")
+        text_width = right - left
+        text_height = bottom - top
 
-        textWidth, textHeight = imgDraw.textsize(word, font=font)
-        xText = (width - textWidth) / 2  # Ignore for now
-        yText = (height - textHeight) / 2
-
-        imgDraw.text((10, yText), word, font=font, fill=(0, 0, 0))
+        img = Image.new("RGB", (text_width + 2 * padding, height), color="white")
+        img_draw = ImageDraw.Draw(img)
+        img_draw.text((padding, height / 2), reshaped, fill=(0, 0, 0), font=font, anchor="lm", language="ar-SA")
         
-        output_path = Path(f"images/{i}/word{font_num+1:02d}.png")
+        img_name = romanization.replace(" ", "_") if " " in romanization else romanization
+        output_path = Path(f"images/{i}/{img_name}_{font_name[:-4]}.png")
         output_path.parent.mkdir(exist_ok=True, parents=True)
+
         img.save(output_path)
