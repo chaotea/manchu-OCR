@@ -21,7 +21,7 @@ fonts = [
 
 
 # Read words from file
-words_df = pd.read_csv("wiktionary/words.csv", names=["romanization", "manchu"])
+words_df = pd.read_csv("data/words.csv", names=["romanization", "manchu"])
 
 # Generate images
 width = 224
@@ -50,8 +50,7 @@ for i in range(len(words_df)):
         img_draw = ImageDraw.Draw(img)
         img_draw.text((padding, height / 2), reshaped, fill=(0, 0, 0), font=font, anchor="lm", language="ar-SA")
         
-        img_name = romanization.replace(" ", "_") if " " in romanization else romanization
-        output_path = Path(f"images/{i}/{img_name}_{font_name[:-4]}.png")
+        output_path = Path(f"images/images_full/{i}/{romanization}_{font_name[:-4]}.png")
         output_path.parent.mkdir(exist_ok=True, parents=True)
 
         img.save(output_path)
