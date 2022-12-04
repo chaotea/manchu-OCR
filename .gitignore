@@ -1,8 +1,10 @@
 # OS
 .DS_Store
 
-# Virtual env
-venv
+# Developer
+venv/
 
 # Data
-images
+data/wikipedia/
+data/wiktionary/
+images/
