@@ -12,5 +12,5 @@ python3 generate_images.py
 For zipping the folder of images, use:
 ```
 cd images
-zip -r images_[size].zip images_[size]
+zip -r images_full.zip images_full
 ```
